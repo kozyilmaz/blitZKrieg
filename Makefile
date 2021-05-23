@@ -1,6 +1,6 @@
 
 subdir-y = \
-	fixedpoint
+	fixedpoint-c
 
 include Makefile.lib
 
