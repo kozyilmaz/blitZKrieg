@@ -84,10 +84,18 @@ int main (int argc, char *argv[])
 
 	x = -2.118018798719000910681;
 	r128FromFloat(&r128_x, x);
+	printf("x.hi : %llu\n", r128_x.hi);
+	printf("x.lo : %llu\n", r128_x.lo);
+
 	y = -2.918018798719000910681;
 	r128FromFloat(&r128_y, y);
+	printf("y.hi : %llu\n", r128_y.hi);
+	printf("y.lo : %llu\n", r128_y.lo);
 
 	r128Mul(&r128_m, &r128_x, &r128_y);
+	printf("m.hi : %llu\n", r128_m.hi);
+	printf("m.lo : %llu\n", r128_m.lo);
+
 	ret = r128ToStringf(bufm, sizeof(bufm), "%#.18f", &r128_m);
 	printf("print multip : %s\n", bufm);
 
