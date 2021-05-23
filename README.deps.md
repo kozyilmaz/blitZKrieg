@@ -5,7 +5,7 @@ ZK-based Attack Resistant Federated Machine Learning
 All dependencies are configured as subtrees for upgradability. Below are the exact commands for update.
 
 ### libmakefile
-```
+```sh
 # add
 $ git remote add libmakefile https://github.com/alperakcan/libmakefile.git
 $ git subtree add --prefix=deps/libmakefile/ --squash libmakefile master
@@ -18,7 +18,7 @@ $ git subtree pull --prefix=deps/libmakefile/ --squash libmakefile-remote master
 ```
 
 ### r128
-```
+```sh
 # add
 $ git remote add r128 https://github.com/fahickman/r128.git
 $ git subtree add --prefix=deps/r128/ --squash r128 main
@@ -31,7 +31,7 @@ $ git subtree pull --prefix=deps/r128/ --squash r128-remote main
 ```
 
 ### abdk-libraries-solidity
-```
+```sh
 # add
 $ git remote add abdk-libraries-solidity https://github.com/abdk-consulting/abdk-libraries-solidity.git
 $ git subtree add --prefix=deps/abdk-libraries-solidity/ --squash abdk-libraries-solidity master
