@@ -7,8 +7,17 @@
     "test": "test"
   },
   "scripts": {
+    "dev": "lite-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Kazım Rıfat Özyılmaz",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@truffle/hdwallet-provider": "^1.4.0",
+    "dotenv": "^10.0.0",
+    "lite-server": "^2.6.1"
+  },
+  "dependencies": {
+    "openzeppelin-solidity": "^4.1.0"
+  }
 }
