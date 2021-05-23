@@ -1,0 +1,14 @@
+{
+  "name": "fixedpoint-solidity",
+  "version": "1.0.0",
+  "description": "64.64 Fixed-Point Math Tests ",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kazım Rıfat Özyılmaz",
+  "license": "ISC"
+}
