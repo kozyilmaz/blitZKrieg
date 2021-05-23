@@ -6,7 +6,7 @@ include Makefile.lib
 
 # $(call patchme,DIRECTORY_TO_BE_PATCHED)
 define patchme
-	if [ -d "$(1)" ] && [ -d "patches" ] && [ ! -f ".patched" ]; then \
+	@if [ -d "$(1)" ] && [ -d "patches" ] && [ ! -f ".patched" ]; then \
 		$(foreach F, $(wildcard $(shell find patches -type f \( -name "*.patch" \) | sort)), patch -d $(1) -p1 < $(F); echo $(F) >> .patched;) \
 	fi
 endef
