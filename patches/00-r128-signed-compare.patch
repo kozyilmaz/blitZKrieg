@@ -1,0 +1,13 @@
+diff --git a/deps/r128/r128.h b/deps/r128/r128.h
+index a345cc4..fdf7b2a 100644
+--- a/deps/r128/r128.h
++++ b/deps/r128/r128.h
+@@ -1188,7 +1188,7 @@ static int r128__format(char *dst, size_t dstSize, const R128 *v, const R128ToSt
+       // print a maximum of 20 digits
+       fullPrecision = 0;
+       precision = 20;
+-   } else if (precision > sizeof(buf) - 21) {
++   } else if ((size_t)precision > sizeof(buf) - 21) {
+       trail = precision - (sizeof(buf) - 21);
+       precision -= trail;
+    }

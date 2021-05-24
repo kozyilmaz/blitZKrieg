@@ -1,0 +1,23 @@
+{
+  "name": "fixedpoint-solidity",
+  "version": "1.0.0",
+  "description": "64.64 Fixed-Point Math Tests ",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "dev": "lite-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kazım Rıfat Özyılmaz",
+  "license": "ISC",
+  "devDependencies": {
+    "@truffle/hdwallet-provider": "^1.4.0",
+    "dotenv": "^10.0.0",
+    "lite-server": "^2.6.1"
+  },
+  "dependencies": {
+    "openzeppelin-solidity": "^4.1.0"
+  }
+}
