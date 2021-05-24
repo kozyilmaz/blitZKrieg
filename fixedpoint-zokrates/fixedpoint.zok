@@ -1,3 +1,59 @@
 
-def main(private field a, field b) -> bool:
-  return a * a == b
+import "utils/casts/u32_to_bits"
+import "utils/casts/u64_to_bits"
+import "utils/casts/u64_to_field"
+
+import "utils/casts/bool_256_to_u32_8"
+
+import "utils/pack/bool/pack128" as pack128
+import "utils/pack/bool/unpack128" as unpack128
+
+import "utils/pack/u32/nonStrictUnpack256" as unpack256_u32
+
+def main(private field a) -> field:
+
+	u64 x_hi = 18446744073709551613
+	u64 x_lo = 16269681497853501440
+	bool[128] x_bits = [
+	    ...u64_to_bits(x_hi),
+	    ...u64_to_bits(x_lo)
+	]
+	// get sign
+	bool x_sign = x_bits[127]
+	// clear sign
+	x_bits[127] = false
+	// create a 256-bit var
+	field x = pack128(x_bits)
+
+
+	u64 y_hi = 18446744073709551613
+	u64 y_lo = 1512286238885863424
+	bool[128] y_bits = [
+	    ...u64_to_bits(y_hi),
+	    ...u64_to_bits(y_lo)
+	]
+	// get sign
+	bool y_sign = y_bits[127]
+	// clear sign
+	y_bits[127] = false
+	// create a 256-bit var
+	field y = pack128(y_bits)
+
+
+	// multiplication
+	//int256 result = int256(x) * y >> 64;
+	u32[8] tmp = unpack256_u32(x * y)
+	// 64 shift
+	bool[128] tmp_bits = [
+	    ...u32_to_bits(tmp[5]),
+	    ...u32_to_bits(tmp[4]),
+	    ...u32_to_bits(tmp[3]),
+	    ...u32_to_bits(tmp[2])
+	]
+	// create a 256-bit var
+	field result = pack128(tmp_bits)
+
+	field output = if (a == result) then 1 else 0 fi
+
+	return output
+
