@@ -35,6 +35,25 @@ def pack64x64(u64 hi, u64 lo) -> (Number64x64):
 	// return struct
 	return n
 
+def mul128(Number64x64 x, Number64x64 y) -> (Number64x64):
+	Number64x64 m = Number64x64 {sign: false, number: 0}
+	// multiplication [int256 result = int256(x) * y >> 64;]
+	field m_field = x.number * y.number
+	// unpack to u32[8]
+	u32[8] m_u32 = unpack256_u32(m_field)
+	// 64 shift : skip the low 64-bit (u32[0..1]) and move the 128-bit in
+	bool[128] m_bits = [
+	    ...u32_to_bits(m_u32[2]),
+	    ...u32_to_bits(m_u32[3]),
+	    ...u32_to_bits(m_u32[4]),
+	    ...u32_to_bits(m_u32[5])
+	]
+	// create a 256-bit var
+	m.number = pack128(m_bits)
+	// return struct
+	return m
+
+
 def main(private field a) -> field:
 
 	Number64x64 x = pack64x64(18446744073709551613, 16269681497853501440)
@@ -45,23 +64,10 @@ def main(private field a) -> field:
 	assert(x.sign == true)
 	assert(y.number == 53827945982242791424)
 
+	Number64x64 m = mul128(x, y)
+	assert(m.sign == false)
+	assert(m.number == 114008601486821147756)
 
-	// multiplication [int256 result = int256(x) * y >> 64;]
-	field m = x.number * y.number
-
-	// unpack to u32[8]
-	u32[8] tmp = unpack256_u32(m)
-	// 64 shift : skip the low 64-bit (u32[0..1]) and move the 128-bit in
-	bool[128] tmp_bits = [
-	    ...u32_to_bits(tmp[2]),
-	    ...u32_to_bits(tmp[3]),
-	    ...u32_to_bits(tmp[4]),
-	    ...u32_to_bits(tmp[5])
-	]
-	// create a 256-bit var
-	field result = pack128(tmp_bits)
-
-	assert(result == 114008601486821147756)
-	field output = if (a == result) then 1 else 0 fi
+	field output = if (a == m.number) then 1 else 0 fi
 	return output
 
