@@ -1,0 +1,67 @@
+
+import "utils/casts/u32_to_bits"
+import "utils/casts/u64_to_bits"
+import "utils/casts/u64_to_field"
+
+import "utils/casts/bool_256_to_u32_8" as bool_to_u32
+
+import "utils/pack/bool/pack128" as pack128
+import "utils/pack/bool/pack256" as pack256
+import "utils/pack/bool/unpack128" as unpack128
+
+import "utils/pack/u32/nonStrictUnpack256" as unpack256_u32
+import "utils/pack/bool/nonStrictUnpack256" as unpack256_bool
+
+// 64.64 fixed point number
+struct Number64x64 {
+	field number
+	bool sign
+}
+
+def pack64x64(u64 hi, u64 lo) -> (Number64x64):
+	Number64x64 n = Number64x64 {sign: false, number: 0}
+	// sign
+	n.sign = if ((hi & 0x8000000000000000) > 0) then true else false fi
+	// format conversion
+	u64 h = if n.sign then (0xFFFFFFFFFFFFFFFF - hi) else hi fi
+	u64 l = if n.sign then (0xFFFFFFFFFFFFFFFF - lo + 1) else lo fi
+	// pack 64.64 fixed number
+	bool[128] bits = [
+	    ...u64_to_bits(h),
+	    ...u64_to_bits(l)
+	]
+	// create a 256-bit field
+	n.number = pack128(bits)
+	// return struct
+	return n
+
+def main(private field a) -> field:
+
+	Number64x64 x = pack64x64(18446744073709551613, 16269681497853501440)
+	assert(x.sign == true)
+	assert(x.number == 39070550723275153408)
+
+	Number64x64 y = pack64x64(18446744073709551613, 1512286238885863424)
+	assert(x.sign == true)
+	assert(y.number == 53827945982242791424)
+
+
+	// multiplication [int256 result = int256(x) * y >> 64;]
+	field m = x.number * y.number
+
+	// unpack to u32[8]
+	u32[8] tmp = unpack256_u32(m)
+	// 64 shift : skip the low 64-bit (u32[0..1]) and move the 128-bit in
+	bool[128] tmp_bits = [
+	    ...u32_to_bits(tmp[2]),
+	    ...u32_to_bits(tmp[3]),
+	    ...u32_to_bits(tmp[4]),
+	    ...u32_to_bits(tmp[5])
+	]
+	// create a 256-bit var
+	field result = pack128(tmp_bits)
+
+	assert(result == 114008601486821147756)
+	field output = if (a == result) then 1 else 0 fi
+	return output
+
