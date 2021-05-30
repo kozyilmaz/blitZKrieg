@@ -3,6 +3,8 @@ import "utils/casts/u32_to_bits"
 import "utils/casts/u64_to_bits"
 import "utils/casts/u64_to_field"
 
+import "utils/casts/u64_from_bits"
+
 import "utils/casts/bool_256_to_u32_8" as bool_to_u32
 
 import "utils/pack/bool/pack128" as pack128
@@ -12,10 +14,16 @@ import "utils/pack/bool/unpack128" as unpack128
 import "utils/pack/u32/nonStrictUnpack256" as unpack256_u32
 import "utils/pack/bool/nonStrictUnpack256" as unpack256_bool
 
+
 // 64.64 fixed point number
 struct Number64x64 {
 	field number
 	bool sign
+}
+
+struct Number64x64Unpack {
+	u64 hi
+	u64 lo
 }
 
 def pack64x64(u64 hi, u64 lo) -> (Number64x64):
@@ -34,6 +42,30 @@ def pack64x64(u64 hi, u64 lo) -> (Number64x64):
 	n.number = pack128(bits)
 	// return struct
 	return n
+
+
+def unpack64x64(Number64x64 x) -> (Number64x64Unpack):
+	// unpack to u32[8]
+	u32[8] x_u32 = unpack256_u32(x.number)
+	// u64:u64
+	bool[64] x_hi = [
+	    ...u32_to_bits(x_u32[0]),
+	    ...u32_to_bits(x_u32[1])
+	]
+	bool[64] x_lo = [
+	    ...u32_to_bits(x_u32[2]),
+	    ...u32_to_bits(x_u32[3])
+	]
+	// split u64:u64
+	u64 hi_pre = u64_from_bits(x_hi)
+	u64 lo_pre = u64_from_bits(x_lo)
+	// TODO handle negative
+	Number64x64Unpack n = Number64x64Unpack {hi: 0, lo: 0}
+	n.hi = hi_pre
+	n.lo = lo_pre
+	// return struct
+	return n
+
 
 def mul128(Number64x64 x, Number64x64 y) -> (Number64x64):
 	Number64x64 m = Number64x64 {sign: false, number: 0}
@@ -67,6 +99,10 @@ def main(private field a) -> field:
 	Number64x64 m = mul128(x, y)
 	assert(m.sign == false)
 	assert(m.number == 114008601486821147756)
+
+	Number64x64Unpack n = unpack64x64(m)
+	assert(n.hi == 6)
+	assert(n.lo == 3328137044563838061)
 
 	field output = if (a == m.number) then 1 else 0 fi
 	return output
