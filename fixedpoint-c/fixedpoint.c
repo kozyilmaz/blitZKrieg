@@ -150,6 +150,8 @@ int main (int argc, char *argv[])
 
 	printf("y.hi : %llu (0x%llx) [converted]\n", 0xFFFFFFFFFFFFFFFF - r128_y.hi, 0xFFFFFFFFFFFFFFFF - r128_y.hi);
 	printf("y.lo : %llu (0x%llx) [converted]\n", 0xFFFFFFFFFFFFFFFF - r128_y.lo + 1, 0xFFFFFFFFFFFFFFFF - r128_y.lo + 1);
+	printf("y.hi : %llu (0x%llx) [converted]\n", ~r128_y.hi, ~r128_y.hi);
+	printf("y.lo : %llu (0x%llx) [converted]\n", ~r128_y.lo + 1, ~r128_y.lo + 1);
 	printf("\n");
 
 	x = 3.9;
