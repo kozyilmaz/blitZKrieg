@@ -15,19 +15,21 @@ import "utils/pack/u32/nonStrictUnpack256" as unpack256_u32
 import "utils/pack/bool/nonStrictUnpack256" as unpack256_bool
 
 
-// 64.64 fixed point number
-struct Number64x64 {
+// 64.64 fixed point number packed
+struct Number64x64Packed {
 	field number
 	bool sign
 }
 
-struct Number64x64Unpack {
+// 64.64 fixed point number unpacked
+struct Number64x64Unpacked {
 	u64 hi
 	u64 lo
+	bool sign
 }
 
-def pack64x64(u64 hi, u64 lo) -> (Number64x64):
-	Number64x64 n = Number64x64 {sign: false, number: 0}
+def pack64x64(u64 hi, u64 lo) -> (Number64x64Packed):
+	Number64x64Packed n = Number64x64Packed {sign: false, number: 0}
 	// sign
 	n.sign = if ((hi & 0x8000000000000000) > 0) then true else false fi
 	// format conversion
@@ -44,31 +46,29 @@ def pack64x64(u64 hi, u64 lo) -> (Number64x64):
 	return n
 
 
-def unpack64x64(Number64x64 x) -> (Number64x64Unpack):
+def unpack64x64(Number64x64Packed x) -> (Number64x64Unpacked):
 	// unpack to u32[8]
 	u32[8] x_u32 = unpack256_u32(x.number)
-	// u64:u64
+	// dump the first 128 bit, move u64:u64
 	bool[64] x_hi = [
-	    ...u32_to_bits(x_u32[0]),
-	    ...u32_to_bits(x_u32[1])
+	    ...u32_to_bits(x_u32[4]),
+	    ...u32_to_bits(x_u32[5])
 	]
 	bool[64] x_lo = [
-	    ...u32_to_bits(x_u32[2]),
-	    ...u32_to_bits(x_u32[3])
+	    ...u32_to_bits(x_u32[6]),
+	    ...u32_to_bits(x_u32[7])
 	]
 	// split u64:u64
-	u64 hi_pre = u64_from_bits(x_hi)
-	u64 lo_pre = u64_from_bits(x_lo)
-	// TODO handle negative
-	Number64x64Unpack n = Number64x64Unpack {hi: 0, lo: 0}
-	n.hi = hi_pre
-	n.lo = lo_pre
+	Number64x64Unpacked n = Number64x64Unpacked {hi: 0, lo: 0, sign: false}
+	n.hi = u64_from_bits(x_hi)
+	n.lo = u64_from_bits(x_lo)
+	n.sign = x.sign
 	// return struct
 	return n
 
 
-def mul128(Number64x64 x, Number64x64 y) -> (Number64x64):
-	Number64x64 m = Number64x64 {sign: false, number: 0}
+def mul128(Number64x64Packed x, Number64x64Packed y) -> (Number64x64Packed):
+	Number64x64Packed m = Number64x64Packed {sign: false, number: 0}
 	// multiplication [int256 result = int256(x) * y >> 64;]
 	field m_field = x.number * y.number
 	// unpack to u32[8]
@@ -82,27 +82,29 @@ def mul128(Number64x64 x, Number64x64 y) -> (Number64x64):
 	]
 	// create a 256-bit var
 	m.number = pack128(m_bits)
+	m.sign = if (x.sign != y.sign) then true else false fi
 	// return struct
 	return m
 
 
 def main(private field a) -> field:
 
-	Number64x64 x = pack64x64(18446744073709551613, 16269681497853501440)
+	Number64x64Packed x = pack64x64(18446744073709551613, 16269681497853501440)
 	assert(x.sign == true)
 	assert(x.number == 39070550723275153408)
 
-	Number64x64 y = pack64x64(18446744073709551613, 1512286238885863424)
+	Number64x64Packed y = pack64x64(18446744073709551613, 1512286238885863424)
 	assert(x.sign == true)
 	assert(y.number == 53827945982242791424)
 
-	Number64x64 m = mul128(x, y)
+	Number64x64Packed m = mul128(x, y)
 	assert(m.sign == false)
 	assert(m.number == 114008601486821147756)
 
-	Number64x64Unpack n = unpack64x64(m)
+	Number64x64Unpacked n = unpack64x64(m)
 	assert(n.hi == 6)
-	assert(n.lo == 3328137044563838061)
+	assert(n.lo == 3328137044563838060)
+//	assert(n.lo == 3328137044563838061)
 
 	field output = if (a == m.number) then 1 else 0 fi
 	return output
