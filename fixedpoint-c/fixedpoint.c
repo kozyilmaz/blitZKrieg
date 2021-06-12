@@ -66,6 +66,8 @@ int main (int argc, char *argv[])
 	char bufa[256];
 	char bufm[256];
 
+	(void) ret;
+
 	// basic sanity
 	x = -2.118018798719000910681;
 	r128FromFloat(&r128_r, x);
