@@ -16,6 +16,7 @@
 
 // parse config file
 static int config (const char *name, int *P, int *N, int *A, int *M, int *T, double **F);
+static int model_parse (const char *name, int *N, int *M, double **model);
 
 // single processor, non-MPI version for testing
 int main(int argc, char** argv)
@@ -35,7 +36,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 	// parse config file
-	rc = config(argv[1], &P, &N, &A, &M, &T, &F);
+	rc = model_parse(argv[1], &N, &M, &F);
 	if (rc != 0) {
 		printf("config parse failed!\n");
 		return -1;
@@ -45,6 +46,14 @@ int main(int argc, char** argv)
 
 	free(F);
 	return 0;
+}
+
+int glue_strncmp (const char *s1, const char *s2, size_t n)
+{
+	if(!s1 && !s2) return 0;
+	if(!s1) return -1;
+	if(!s2) return 1;
+	return strncmp(s1, s2, n);
 }
 
 
@@ -84,6 +93,132 @@ static int glue_strtod (const char *nptr, double *data)
 	return 0;
 }
 
+// parse model file
+static int model_parse (const char *name, int *N, int *M, double **model)
+{
+	int i = 0;
+	int j = 0;
+	size_t len = 0;
+	ssize_t read = 0;
+	FILE *fp = NULL;
+
+	char * line = NULL;
+	char *token = NULL;
+	char *saveptr = NULL;
+	char delimit[]=" \t\r\n\v\f";
+
+	int _N = 0;
+	int _M = 0;
+	double *_model = NULL;
+
+	if (!name) {
+		printf("null string (file)\n");
+		goto err0;
+	}
+	fp = fopen(name, "r");
+	if (!fp) {
+		perror("open");
+		goto err0;
+	}
+	/* first line: type of parameters ('M' - model or 'T' - test) */
+	if ((read = getline(&line, &len, fp)) == -1) {
+		perror("file type");
+		goto err1;
+	}
+	//debugf("%s", line);
+	for (token = strtok_r(line, delimit, &saveptr); token != NULL; token = strtok_r(NULL, delimit, &saveptr)) {
+		if (glue_strncmp(token, "M", 1) != 0) {
+			printf("file type '%s' is not model\n", token);
+			goto err1;
+		}
+		break;
+	}
+	/* second line:
+	    N is the number of rows
+	    M is the number of columns */
+	if ((read = getline(&line, &len, fp)) == -1) {
+		perror("model params");
+		goto err1;
+	}
+	//debugf("%s", line);
+	i = 0;
+	for (token = strtok_r(line, delimit, &saveptr); token != NULL; token = strtok_r(NULL, delimit, &saveptr)) {
+		switch (i) {
+			case 0: if (glue_strtoi(token, &_N) != 0) { goto err1; } break;
+			case 1: if (glue_strtoi(token, &_M) != 0) { goto err1; } break;
+			default:
+				printf("invalid N/M line\n");
+				goto err1;
+		}
+		i++;
+	}
+	// allocate contiguous memory: N x M
+	_model = (double *) malloc (_N * _M * sizeof(double));
+	if (!_model) {
+		printf("model alloc error\n");
+		goto err1;
+	}
+
+	/* remaining lines: N rows of model data */
+	i = 0;
+	while ((read = getline(&line, &len, fp)) != -1) {
+		//debugf("%s", line);
+		// instance sanity check
+		if (i >= _N) {
+			printf("exceeded total instance count (N):(%d)!\n", _N);
+			goto err2;
+		}
+		// parse M columns of model data
+		j = 0;
+		for (token = strtok_r(line, delimit, &saveptr); token != NULL; token = strtok_r(NULL, delimit, &saveptr)) {
+			if (j >= _M) {
+				printf("exceeded total item count M:(%d) per instance!\n", _M);
+				goto err2;
+			}
+			// part of the feature vector, parse float
+			if (glue_strtod(token, &_model[(i * _M) + j]) != 0) {
+				printf("unable to convert '%s' to float @ instance(%d),item(%d)\n", token, i, j);
+				goto err2;
+			}
+			j++;
+		}
+		// model sanity check
+		if (j != _M) {
+			printf("not enough columns _M(%d), expected(%d) @ instance(%d)!\n", j, _M, i);
+			goto err2;
+		}
+		i++;
+	}
+	// instances sanity check
+	if (i != _N) {
+		printf("not enough rows(%d), expected(%d)!\n", i, _N);
+		goto err2;
+	}
+
+	if (line)
+		free(line);
+	fclose(fp);
+
+	// fill pointers
+	*N = _N;
+	*M = _M;
+	*model = _model;
+	return 0;
+
+	// graceful exit
+err2:	free(model);
+err1:	fclose(fp);
+		if (line)
+			free(line);
+err0:	return -1;
+}
+
+
+
+
+
+
+
 // parse config file
 static int config (const char *name, int *P, int *N, int *A, int *M, int *T, double **F)
 {
@@ -115,17 +250,14 @@ static int config (const char *name, int *P, int *N, int *A, int *M, int *T, dou
 		perror("open");
 		goto err0;
 	}
-	/* first line: P is the total number of processors */
+	/* first line: type of parameters ('M' - model or 'T' - test) */
 	if ((read = getline(&line, &len, fp)) == -1) {
-		perror("processors");
+		perror("file type");
 		goto err1;
 	}
 	//debugf("%s", line);
 	for (token = strtok_r(line, delimit, &saveptr); token != NULL; token = strtok_r(NULL, delimit, &saveptr)) {
-		if (glue_strtoi(token, &_P) != 0) {
-			printf("unable to convert processor string '%s' to int\n", token);
-			goto err1;
-		}
+
 		break;
 	}
 	/* second line:
