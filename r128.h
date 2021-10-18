@@ -1,5 +1,5 @@
 /*
-r128.h: 128-bit (64.64) signed fixed-point arithmetic. Version 1.4.4
+r128.h: 128-bit (64.64) signed fixed-point arithmetic. Version 1.5.0
 
 COMPILATION
 -----------
@@ -127,8 +127,10 @@ extern double r128ToFloat(const R128 *v);
 // Copy
 extern void r128Copy(R128 *dst, const R128 *src);
 
-// Negate
-extern void r128Neg(R128 *dst, const R128 *src);
+// Sign manipulation
+extern void r128Neg(R128 *dst, const R128 *v);   // -v
+extern void r128Abs(R128* dst, const R128* v);   // abs(v)
+extern void r128Nabs(R128* dst, const R128* v);  // -abs(v)
 
 // Bitwise operations
 extern void r128Not(R128 *dst, const R128 *src);               // ~a
@@ -1413,15 +1415,15 @@ void r128FromString(R128 *dst, const char *s, char **endptr)
          }
       }
 
-      for (--s; s >= exp; --s) {
+      for (const char *c = s - 1; c >= exp; --c) {
          R128_U64 digit, unused;
 
-         if ('0' <= *s && *s <= '9') {
-            digit = *s - '0';
-         } else if ('a' <= *s && *s <= 'f') {
-            digit = *s - 'a' + 10;
+         if ('0' <= *c && *c <= '9') {
+            digit = *c - '0';
+         } else if ('a' <= *c && *c <= 'f') {
+            digit = *c - 'a' + 10;
          } else {
-            digit = *s - 'A' + 10;
+            digit = *c - 'A' + 10;
          }
 
          lo = r128__udiv128(lo, digit, base, &unused);
@@ -1546,10 +1548,38 @@ void r128Copy(R128 *dst, const R128 *src)
    R128_DEBUG_SET(dst);
 }
 
-void r128Neg(R128 *dst, const R128 *src)
+void r128Neg(R128 *dst, const R128 *v)
 {
-   r128__neg(dst, src);
+   r128__neg(dst, v);
    R128_DEBUG_SET(dst);
+}
+
+void r128Abs(R128* dst, const R128* v)
+{
+    R128 sign, inv;
+
+    R128_ASSERT(dst != NULL);
+    R128_ASSERT(v != NULL);
+
+    sign.lo = sign.hi = (R128_U64)(((R128_S64)v->hi) >> 63);
+    inv.lo = v->lo ^ sign.lo;
+    inv.hi = v->hi ^ sign.hi;
+
+    r128Sub(dst, &inv, &sign);
+}
+
+void r128Nabs(R128* dst, const R128* v)
+{
+    R128 sign, inv;
+
+    R128_ASSERT(dst != NULL);
+    R128_ASSERT(v != NULL);
+
+    sign.lo = sign.hi = (R128_U64)(((R128_S64)v->hi) >> 63);
+    inv.lo = v->lo ^ sign.lo;
+    inv.hi = v->hi ^ sign.hi;
+
+    r128Sub(dst, &sign, &inv);
 }
 
 void r128Not(R128 *dst, const R128 *src)
