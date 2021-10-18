@@ -1,6 +1,6 @@
 
 target-y = \
-	config \
+	creator \
 	fixedpoint
 
 fixedpoint_common_files = \
@@ -24,6 +24,11 @@ config_files-y = \
 config_includes-y = \
 
 config_cflags-y += \
+
+creator_common_files = r128.h creator.c
+creator_files-y = ${creator_common_files}
+creator_includes-y = \
+creator_cflags-y += \
 
 # tests
 #subdir-y += \
