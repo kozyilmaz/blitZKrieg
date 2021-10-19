@@ -39,11 +39,6 @@ int main(int argc, char** argv)
 	double addition[SAMPLE_SIZE][SAMPLE_SIZE];
 	double subtraction[SAMPLE_SIZE][SAMPLE_SIZE];
 
-	(void) multiplication;
-	(void) division;
-	(void) addition;
-	(void) subtraction;
-
 	// file name check
 	if (argc == 1) {
 		strcpy(name, HEADER_NAME);
@@ -87,7 +82,27 @@ int main(int argc, char** argv)
 			printf("multiplication[%d][%d] = %.18f\n", i, j, multiplication[i][j]);
 		}
 	}
-
+	// create division matrix - with regular double 
+	for (i = 0; i < SAMPLE_SIZE; i++) {
+		for (j = 0; j < SAMPLE_SIZE; j++) {
+			division[i][j] = samples[i] / samples[j];
+			printf("division[%d][%d] = %.18f\n", i, j, division[i][j]);
+		}
+	}
+	// create addition matrix - with regular double 
+	for (i = 0; i < SAMPLE_SIZE; i++) {
+		for (j = 0; j < SAMPLE_SIZE; j++) {
+			addition[i][j] = samples[i] + samples[j];
+			printf("addition[%d][%d] = %.18f\n", i, j, addition[i][j]);
+		}
+	}
+	// create subtraction matrix - with regular double 
+	for (i = 0; i < SAMPLE_SIZE; i++) {
+		for (j = 0; j < SAMPLE_SIZE; j++) {
+			subtraction[i][j] = samples[i] - samples[j];
+			printf("subtraction[%d][%d] = %.18f\n", i, j, subtraction[i][j]);
+		}
+	}
 
 	R128 r128_double;
 	for (i = 0; i < SAMPLE_SIZE; i++) {
