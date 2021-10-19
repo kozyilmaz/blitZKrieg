@@ -14,7 +14,7 @@
 #define HEADER_MAX_STRLEN (64)
 #define HEADER_NAME "r128_test_data.h"
 
-struct unpacked {
+struct unpacked64x64 {
 	uint64_t lo;
 	uint64_t hi;
 };
@@ -47,17 +47,18 @@ int main(int argc, char** argv)
 	double addition[SAMPLE_SIZE][SAMPLE_SIZE];
 	double subtraction[SAMPLE_SIZE][SAMPLE_SIZE];
 
-	struct unpacked samples_unpacked[SAMPLE_SIZE];
+	struct unpacked64x64 samples_unpacked[SAMPLE_SIZE];
 
-	struct unpacked multiplication_unpacked[SAMPLE_SIZE][SAMPLE_SIZE];
+	struct unpacked64x64 multiplication_unpacked[SAMPLE_SIZE][SAMPLE_SIZE];
+	struct unpacked64x64 division_unpacked[SAMPLE_SIZE][SAMPLE_SIZE];
 
-	double d;
 	R128 r128_double;
 	R128 r128_a;
 	R128 r128_b;
 	R128 r128_c;
 
-	char buf[64];
+	//double d;
+	//char buf[64];
 
 	// file name check
 	if (argc == 1) {
@@ -173,7 +174,11 @@ int main(int argc, char** argv)
 	//		bool isEqual = fabs(d - multiplication[i][j]) <= FLT_EPSILON;
 	//		printf("multiplication[%d][%d] = %s %.18f x %.18f (%s)\n", i, j, buf, multiplication[i][j], d, (isEqual == true) ? "EQUAL" : "NOT EQUAL");
 	//		R128_TEST_FLEQ(r128_c, multiplication[i][j]);
+
+
 	(void) multiplication_unpacked;
+	(void) division_unpacked;
+
 
 	// close file
 	fclose(fp);
