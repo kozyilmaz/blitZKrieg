@@ -28,10 +28,21 @@ double randfrom(double min, double max)
 int main(int argc, char** argv)
 {
 	int i;
-	double d;
+	int j;
 	FILE *fp = NULL;
 	size_t len = 0;
 	char name[HEADER_MAX_STRLEN];
+
+	double samples[SAMPLE_SIZE];
+	double multiplication[SAMPLE_SIZE][SAMPLE_SIZE];
+	double division[SAMPLE_SIZE][SAMPLE_SIZE];
+	double addition[SAMPLE_SIZE][SAMPLE_SIZE];
+	double subtraction[SAMPLE_SIZE][SAMPLE_SIZE];
+
+	(void) multiplication;
+	(void) division;
+	(void) addition;
+	(void) subtraction;
 
 	// file name check
 	if (argc == 1) {
@@ -61,24 +72,37 @@ int main(int argc, char** argv)
 		goto err0;
 	}
 
-
+	// seed randomness
 	srand(time(NULL));
 
+	// create test set
 	for (i = 0; i < SAMPLE_SIZE; i++) {
-		d = randfrom(RANGE_MIN, RANGE_MAX);
-		printf("d[%d] = %.18f\n", i, d);
+		samples[i] = randfrom(RANGE_MIN, RANGE_MAX);
+		printf("d[%d] = %.18f\n", i, samples[i]);
+	}
+	// create multiplication matrix - with regular double 
+	for (i = 0; i < SAMPLE_SIZE; i++) {
+		for (j = 0; j < SAMPLE_SIZE; j++) {
+			multiplication[i][j] = samples[i] * samples[j];
+			printf("multiplication[%d][%d] = %.18f\n", i, j, multiplication[i][j]);
+		}
 	}
 
 
 	R128 r128_double;
-	r128FromFloat(&r128_double, d);
-	R128_TEST_FLEQ(r128_double, d);
+	for (i = 0; i < SAMPLE_SIZE; i++) {
+		r128FromFloat(&r128_double, samples[i]);
+		R128_TEST_FLEQ(r128_double, samples[i]);
+	}
 
 	// close file
 	fclose(fp);
 	// return 
 	return 0;
-}
+
 //err1:	fclose(fp);
-err0:	return -1;
+err0:
+	return -1;
+}
+
 
