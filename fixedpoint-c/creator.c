@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 	R128 r128_c;
 
 	//char line[1024];
-	//double d;
+	double d;
 	//char buf[64];
 
 	// file name check
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
 		// samples unpacked
 		samples_unpacked[i].lo = r128_double.lo;
 		samples_unpacked[i].hi = r128_double.hi;
-		printf("samples_unpacked[%d] = lo:%lu hi:%lu\n", i, samples_unpacked[i].lo, samples_unpacked[i].hi);
+		//printf("samples_unpacked[%d] = lo:%lu hi:%lu\n", i, samples_unpacked[i].lo, samples_unpacked[i].hi);
 
 	}
 	// create multiplication matrix - with regular double 
@@ -207,6 +207,8 @@ int main(int argc, char** argv)
 			r128Mul(&r128_c, &r128_a, &r128_b);
 			multiplication_unpacked[i][j].lo = r128_c.lo;
 			multiplication_unpacked[i][j].hi = r128_c.hi;
+			d = r128ToFloat(&r128_c);
+			R128_TEST_FLFLEQ(d, multiplication[i][j]);
 		}
 	}
 	// create division matrix - with regular double 
@@ -219,6 +221,8 @@ int main(int argc, char** argv)
 			r128Div(&r128_c, &r128_a, &r128_b);
 			division_unpacked[i][j].lo = r128_c.lo;
 			division_unpacked[i][j].hi = r128_c.hi;
+			d = r128ToFloat(&r128_c);
+			R128_TEST_FLFLEQ(d, division[i][j]);
 		}
 	}
 	// create addition matrix - with regular double 
@@ -231,6 +235,8 @@ int main(int argc, char** argv)
 			r128Add(&r128_c, &r128_a, &r128_b);
 			addition_unpacked[i][j].lo = r128_c.lo;
 			addition_unpacked[i][j].hi = r128_c.hi;
+			d = r128ToFloat(&r128_c);
+			R128_TEST_FLFLEQ(d, addition[i][j]);
 		}
 	}
 	// create addition matrix - with regular double 
@@ -243,6 +249,8 @@ int main(int argc, char** argv)
 			r128Sub(&r128_c, &r128_a, &r128_b);
 			subtraction_unpacked[i][j].lo = r128_c.lo;
 			subtraction_unpacked[i][j].hi = r128_c.hi;
+			d = r128ToFloat(&r128_c);
+			R128_TEST_FLFLEQ(d, subtraction[i][j]);
 		}
 	}
 
@@ -253,12 +261,8 @@ int main(int argc, char** argv)
 	}
 
 
-	//		r128ToStringf(buf, sizeof(buf), "%#.18f", &r128_c);
-	//		d = r128ToFloat(&r128_c);
-	//		bool isEqual = fabs(d - multiplication[i][j]) <= FLT_EPSILON;
-	//		printf("multiplication[%d][%d] = %s %.18f x %.18f (%s)\n", i, j, buf, multiplication[i][j], d, (isEqual == true) ? "EQUAL" : "NOT EQUAL");
-	//		R128_TEST_FLEQ(r128_c, multiplication[i][j]);
-
+	//d = r128ToFloat(&r128_c);
+	//bool isEqual = fabs(d - multiplication[i][j]) <= FLT_EPSILON;
 
 	(void) multiplication_unpacked;
 	(void) division_unpacked;
