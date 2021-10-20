@@ -8,7 +8,7 @@
 
 #define RANGE_MIN (-1000)
 #define RANGE_MAX (1000)
-#define SAMPLE_SIZE (10)
+#define SAMPLE_SIZE (3)
 #define SENSITIVITY (0.0000001)
 
 #define HEADER_MAX_STRLEN (64)
@@ -48,15 +48,17 @@ int main(int argc, char** argv)
 	double subtraction[SAMPLE_SIZE][SAMPLE_SIZE];
 
 	struct unpacked64x64 samples_unpacked[SAMPLE_SIZE];
-
 	struct unpacked64x64 multiplication_unpacked[SAMPLE_SIZE][SAMPLE_SIZE];
 	struct unpacked64x64 division_unpacked[SAMPLE_SIZE][SAMPLE_SIZE];
+	struct unpacked64x64 addition_unpacked[SAMPLE_SIZE][SAMPLE_SIZE];
+	struct unpacked64x64 subtraction_unpacked[SAMPLE_SIZE][SAMPLE_SIZE];
 
 	R128 r128_double;
 	R128 r128_a;
 	R128 r128_b;
 	R128 r128_c;
 
+	//char line[1024];
 	//double d;
 	//char buf[64];
 
@@ -92,17 +94,38 @@ int main(int argc, char** argv)
 	srand(time(NULL));
 
 	// create test set
+	fprintf(fp, "double samples[%d] = {\n", SAMPLE_SIZE);
 	for (i = 0; i < SAMPLE_SIZE; i++) {
 		samples[i] = randfrom(RANGE_MIN, RANGE_MAX);
-		printf("d[%d] = %.18f\n", i, samples[i]);
+		if (i != SAMPLE_SIZE - 1) {
+			fprintf(fp, "\t%.18f,\n", samples[i]);
+		} else {
+			fprintf(fp, "\t%.18f\n", samples[i]);
+		}
+		//printf("d[%d] = %.18f\n", i, samples[i]);
 	}
+	fprintf(fp, "};\n");
+
 	// create multiplication matrix - with regular double 
+	fprintf(fp, "double multiplication[%d][%d] = {\n", SAMPLE_SIZE, SAMPLE_SIZE);
 	for (i = 0; i < SAMPLE_SIZE; i++) {
+		fprintf(fp, "\t{ ");
 		for (j = 0; j < SAMPLE_SIZE; j++) {
 			multiplication[i][j] = samples[i] * samples[j];
-			printf("multiplication[%d][%d] = %.18f\n", i, j, multiplication[i][j]);
+			//printf("multiplication[%d][%d] = %.18f\n", i, j, multiplication[i][j]);
+			if (j != SAMPLE_SIZE - 1) {
+				fprintf(fp, " %.18f, ", multiplication[i][j]);
+			} else {
+				if (i != SAMPLE_SIZE - 1) {
+					fprintf(fp, "%.18f },\n", multiplication[i][j]);
+				} else {
+					fprintf(fp, "%.18f }\n", multiplication[i][j]);
+				}
+			}
 		}
 	}
+	fprintf(fp, "};\n");
+
 	// create division matrix - with regular double 
 	for (i = 0; i < SAMPLE_SIZE; i++) {
 		for (j = 0; j < SAMPLE_SIZE; j++) {
@@ -160,7 +183,30 @@ int main(int argc, char** argv)
 			division_unpacked[i][j].hi = r128_c.hi;
 		}
 	}
-
+	// create addition matrix - with regular double 
+	for (i = 0; i < SAMPLE_SIZE; i++) {
+		r128_a.lo = samples_unpacked[i].lo;
+		r128_a.hi = samples_unpacked[i].hi;
+		for (j = 0; j < SAMPLE_SIZE; j++) {
+			r128_b.lo = samples_unpacked[j].lo;
+			r128_b.hi = samples_unpacked[j].hi;
+			r128Add(&r128_c, &r128_a, &r128_b);
+			addition_unpacked[i][j].lo = r128_c.lo;
+			addition_unpacked[i][j].hi = r128_c.hi;
+		}
+	}
+	// create addition matrix - with regular double 
+	for (i = 0; i < SAMPLE_SIZE; i++) {
+		r128_a.lo = samples_unpacked[i].lo;
+		r128_a.hi = samples_unpacked[i].hi;
+		for (j = 0; j < SAMPLE_SIZE; j++) {
+			r128_b.lo = samples_unpacked[j].lo;
+			r128_b.hi = samples_unpacked[j].hi;
+			r128Sub(&r128_c, &r128_a, &r128_b);
+			subtraction_unpacked[i][j].lo = r128_c.lo;
+			subtraction_unpacked[i][j].hi = r128_c.hi;
+		}
+	}
 
 	for (i = 0; i < SAMPLE_SIZE; i++) {
 		r128_double.lo = samples_unpacked[i].lo;
@@ -178,6 +224,8 @@ int main(int argc, char** argv)
 
 	(void) multiplication_unpacked;
 	(void) division_unpacked;
+	(void) addition_unpacked;
+	(void) subtraction_unpacked;
 
 
 	// close file
