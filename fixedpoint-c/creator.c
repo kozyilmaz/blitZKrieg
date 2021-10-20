@@ -8,7 +8,7 @@
 
 #define RANGE_MIN (-1000)
 #define RANGE_MAX (1000)
-#define SAMPLE_SIZE (3)
+#define SAMPLE_SIZE (20)
 #define SENSITIVITY (0.0000001)
 
 #define HEADER_MAX_STRLEN (64)
@@ -127,26 +127,64 @@ int main(int argc, char** argv)
 	fprintf(fp, "};\n");
 
 	// create division matrix - with regular double 
+	fprintf(fp, "double division[%d][%d] = {\n", SAMPLE_SIZE, SAMPLE_SIZE);
 	for (i = 0; i < SAMPLE_SIZE; i++) {
+		fprintf(fp, "\t{ ");
 		for (j = 0; j < SAMPLE_SIZE; j++) {
 			division[i][j] = samples[i] / samples[j];
-			printf("division[%d][%d] = %.18f\n", i, j, division[i][j]);
+			//printf("division[%d][%d] = %.18f\n", i, j, division[i][j]);
+			if (j != SAMPLE_SIZE - 1) {
+				fprintf(fp, " %.18f, ", division[i][j]);
+			} else {
+				if (i != SAMPLE_SIZE - 1) {
+					fprintf(fp, "%.18f },\n", division[i][j]);
+				} else {
+					fprintf(fp, "%.18f }\n", division[i][j]);
+				}
+			}
 		}
 	}
+	fprintf(fp, "};\n");
+
 	// create addition matrix - with regular double 
+	fprintf(fp, "double addition[%d][%d] = {\n", SAMPLE_SIZE, SAMPLE_SIZE);
 	for (i = 0; i < SAMPLE_SIZE; i++) {
+		fprintf(fp, "\t{ ");
 		for (j = 0; j < SAMPLE_SIZE; j++) {
 			addition[i][j] = samples[i] + samples[j];
-			printf("addition[%d][%d] = %.18f\n", i, j, addition[i][j]);
+			//printf("addition[%d][%d] = %.18f\n", i, j, addition[i][j]);
+			if (j != SAMPLE_SIZE - 1) {
+				fprintf(fp, " %.18f, ", addition[i][j]);
+			} else {
+				if (i != SAMPLE_SIZE - 1) {
+					fprintf(fp, "%.18f },\n", addition[i][j]);
+				} else {
+					fprintf(fp, "%.18f }\n", addition[i][j]);
+				}
+			}
 		}
 	}
+	fprintf(fp, "};\n");
+
 	// create subtraction matrix - with regular double 
+	fprintf(fp, "double subtraction[%d][%d] = {\n", SAMPLE_SIZE, SAMPLE_SIZE);
 	for (i = 0; i < SAMPLE_SIZE; i++) {
+		fprintf(fp, "\t{ ");
 		for (j = 0; j < SAMPLE_SIZE; j++) {
 			subtraction[i][j] = samples[i] - samples[j];
-			printf("subtraction[%d][%d] = %.18f\n", i, j, subtraction[i][j]);
+			//printf("subtraction[%d][%d] = %.18f\n", i, j, subtraction[i][j]);
+			if (j != SAMPLE_SIZE - 1) {
+				fprintf(fp, " %.18f, ", subtraction[i][j]);
+			} else {
+				if (i != SAMPLE_SIZE - 1) {
+					fprintf(fp, "%.18f },\n", subtraction[i][j]);
+				} else {
+					fprintf(fp, "%.18f }\n", subtraction[i][j]);
+				}
+			}
 		}
 	}
+	fprintf(fp, "};\n");
 
 	// convert double to r128 64x64 format
 	for (i = 0; i < SAMPLE_SIZE; i++) {

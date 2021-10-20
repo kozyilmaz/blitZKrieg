@@ -3,6 +3,7 @@
 #include <time.h>
 
 #include "macros.h"
+#include "r128_test_data.h"
 
 int main (int argc, char *argv[])
 {
